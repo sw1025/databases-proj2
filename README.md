@@ -1,1 +1,1 @@
-# databases-project1
+# Databases Project
