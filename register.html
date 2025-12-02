@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Home</title>
+    
+    <link rel="icon" href="https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/How_to_use_icon.svg/1200px-How_to_use_icon.svg.png">
+    
+    <link href="style.css" rel="stylesheet" type="text/css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400&display=swap" rel="stylesheet">
+    
+  </head>
+  
+  <body id = "page">
+    <header> NYUSH Airlines <br>
+      <div id="google_translate_element"></div>
+      <script type="text/javascript">// <![CDATA[
+      function googleTranslateElementInit() {
+      new google.translate.TranslateElement({pageLanguage: 'en', layout: google.translate.TranslateElement.InlineLayout.SIMPLE}, 'google_translate_element');
+      }
+      // ]]></script>
+      <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit" type="text/javascript"></script>
+    </header>
+    <nav>
+      <ul>
+        <li class = "navTitle"> <a href = "index.html"> Home </a>
+        </li>
+        <li class = "navTitle"> <a href = "inprogress.html"> In Progress Flights </a>
+        </li>
+        <li class = "navTitle"> <a href = "upcoming.html"> Upcoming Flights </a>
+        </li>
+      </ul>
+    </nav>
+    
+    <h1> Register Account </h1>
+    <main>
+  <select id="cars" name="cars">
+    <option value="" disabled selected>Account Type</option>
+    <option>Customer</option>
+    <option>Booking Agent</option>
+    <option>Airline Staff</option>
+  </select>
+
+    <br>
+    <br>
+    <input type = "text" placeholder = "Username" id = "nameInput"> </input>
+    <br>
+    <br>
+    <input type = "text" placeholder = "Password" id = "sourceInput"> </input>
+    <br>
+    <br>
+    <button id = "submit"> Submit </button>
+    <p> Already have an account?<a href = "login.html"> Login. </a> </p> 
+
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
