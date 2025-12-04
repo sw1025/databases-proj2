@@ -3,11 +3,11 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-    <title>Home</title>
+    <title>Register</title>
     
     <link rel="icon" href="https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/How_to_use_icon.svg/1200px-How_to_use_icon.svg.png">
     
-    <link href="style.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400&display=swap" rel="stylesheet">
@@ -43,15 +43,44 @@
     <option>Booking Agent</option>
     <option>Airline Staff</option>
   </select>
-
+  <br>
+  <br>
     <form action = "/registerAuth" method = "POST">
-      <input type = "text" name = "username" placeholder = "Username"> </input>
+      <input type = "text" name = "username" placeholder = "Email" required> </input>
       <br>
       <br>
-      <input type = "password" name = "password" placeholder = "Password"> </input>
+      <input type = "text" name = "name" placeholder = "Name" required> </input>
       <br>
       <br>
-      <input type = "password" name = "password2" placeholder = "Confirm Password"> </input>
+      <input type = "password" name = "password" placeholder = "Password" required> </input>
+      <!-- can implement later to confirm pwd
+      <br>
+      <br>
+      <input type = "password" name = "password2" placeholder = "Confirm Password" required> </input> -->
+      <br>
+      <br>
+      <input type = "number" name = "buildingnum" placeholder = "Building Number" required> </input>
+      <br>
+      <br>
+      <input type = "text" name = "street" placeholder = "Street" required> </input>
+      <br>
+      <br>
+      <input type = "text" name = "city" placeholder = "City" required> </input>
+      <br>
+      <br>
+      <input type = "text"  name = "state" placeholder = "State" required> </input>
+      <p>Phone Number</p>
+      <input type = "tel"  name = "tel" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" placeholder = "XXX-XXX-XXXX" required> </input>
+      <p>Passport Number</p>
+      <input type = "text" name = "passportid" placeholder = "Passport Number" required> </input>
+      <p>Passport Expiration</p>
+      <input type = "date" name = "passportexp" placeholder = "Passport Expiration" required> </input>
+      <br>
+      <br>
+      <input type = "text" name = "country" placeholder = "Passport Country" required> </input>
+
+      <p>DOB</p>
+      <input type = "date" name = "dob" placeholder = "DOB" required> </input>
       <br>
       <br>
       <button type = "submit"> Register </button>
