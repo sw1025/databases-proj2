@@ -1,4 +1,0 @@
-function homeMessage()
-{
-  alert("Hello!");
-}

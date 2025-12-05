@@ -28,11 +28,11 @@
     </header>
     <nav>
       <ul>
-        <li class = "navTitle"> <a href = "index.html"> Home </a>
+        <li class = "navTitle"> <a href="{{ url_for('home') }}">  Home </a>
         </li>
-        <li class = "navTitle"> <a href = "inprogress.html"> In Progress Flights </a>
+        <li class = "navTitle"> <a href="{{ url_for('inprogress') }}">  In Progress Flights </a>
         </li>
-        <li class = "navTitle"> <a href = "upcoming.html"> Upcoming Flights </a>
+        <li class = "navTitle"> <a href="{{ url_for('upcoming') }}">  Upcoming Flights </a>
         </li>
       </ul>
     </nav>
@@ -42,12 +42,10 @@
 
     <p> Please login or register for an account for booking history. </p>
     <p> 
-      <a href = "login.html"> Login </a>
-      <a href = "register.html"> Register Account </a> 
+      <a href="{{ url_for('login') }}"> Login </a>
+      <a href="{{ url_for('register') }}"> Register Account </a> 
     </p>
     
-    <button onclick ="homeMessage()"> Click here! </button>
-
     </main>
     <script src="script.js"></script>
   </body>
