@@ -92,8 +92,10 @@ def registerAuth():
 
 @app.route('/cust_dashboard')
 def cust_dashboard():
+    if 'username' not in session:
+        return redirect(url_for('login'))
     return render_template('cust_dashboard.html')
-     
+
 @app.route('/register',methods=['GET'])
 def register():
     return render_template('register.html')
@@ -101,6 +103,12 @@ def register():
 @app.route('/login',methods=['GET'])
 def login():
     return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    session.pop('username', None)
+    return redirect(url_for('login'))
+
 
 @app.route('/upcoming',methods=['GET'])
 def upcoming():
