@@ -2,7 +2,6 @@ CREATE DATABASE IF NOT EXISTS air_reservation;
 
 USE air_reservation;
 
-
 CREATE TABLE `airline` (
     `airline_name` varchar(50) NOT NULL,
     PRIMARY KEY(`airline_name`)
@@ -122,7 +121,7 @@ CREATE TABLE `seat_class` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --rename attribute price to base_price to flight
-ALTER TABLE `flight`RENAME COLUMN price to base_price;
+ALTER TABLE `flight` CHANGE `base_price` `baseprice` DECIMAL(10,0) NOT NULL;
 
 --add constraint of ticket
 ALTER TABLE `ticket`
