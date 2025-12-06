@@ -30,6 +30,10 @@ nav{
   
 }
 
+.toggleForm{
+  display:none;
+}
+
 body{
   font-family: 'Roboto', sans-serif;
 }
@@ -44,12 +48,9 @@ main{
   margin-left: 10%;
 }
 
-div{
-  float: left;
-}
-
 @media screen and (min-width: 992px){
   #page {
     background-color: #eddee1;
   }
 }
+

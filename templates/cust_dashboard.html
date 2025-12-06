@@ -26,9 +26,14 @@
     </nav>
     <h1> Customer Dashboard </h1>
     <p> testing this out?</p>
+
+    <button> <a href="{{url_for('purchased_flights')}}"> Purchased Flights </a> </button>
+    <button> <a href="{{url_for('flight_search')}}"> Flight Search </a> </button>
+    <button> <a href="{{url_for('spending')}}"> Past Spending </a> </button>
+
     <button> <a href="{{ url_for('logout') }}"> Logout </a> </button>
     
 
-    <script src="script.js"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
   </body>
 </html>

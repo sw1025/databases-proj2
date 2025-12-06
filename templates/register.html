@@ -37,61 +37,92 @@
     
     <h1> Register Account </h1>
     <main>
-  <select id="cars" name="cars">
-    <option value="" disabled selected>Account Type</option>
-    <option>Customer</option>
-    <option>Booking Agent</option>
-    <option>Airline Staff</option>
-  </select>
-  <br>
-  <br>
     
     <form action = "/registerAuth" method = "POST">
-      <input type = "text" name = "username" placeholder = "Email" required> </input>
+      <select onchange="registerForm()" id = "acc_type" name = "register_type">
+        <option value="" disabled selected>Account Type</option>
+        <option value = 'customer'>Customer</option>
+        <option value = 'agent'>Booking Agent</option>
+        <option value = 'staff'>Airline Staff</option>
+      </select>
       <br>
       <br>
-      <input type = "text" name = "name" placeholder = "Name" required> </input>
+      <div id="agent" class = "toggleForm">
+        <input type = "text" name = "username" placeholder = "Email"> </input>
+      </div>
+
+      <div id="customer" class = "toggleForm">
+        <input type = "text" name = "username" placeholder = "Email"> </input>
+        <br>
+        <br>
+        <input type = "text" name = "name" placeholder = "Name"> </input>
+        <br>
+        <br>
+        <input type = "number" name = "buildingnum" placeholder = "Building Number"> </input>
+        <br>
+        <br>
+        <input type = "text" name = "street" placeholder = "Street"> </input>
+        <br>
+        <br>
+        <input type = "text" name = "city" placeholder = "City"> </input>
+        <br>
+        <br>
+        <input type = "text"  name = "state" placeholder = "State"> </input>
+        <p>Phone Number</p>
+        <input type = "tel"  name = "tel" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" placeholder = "XXX-XXX-XXXX"> </input>
+        <p>Passport Number</p>
+        <input type = "text" name = "passportid" placeholder = "Passport Number"> </input>
+        <p>Passport Expiration</p>
+        <input type = "date" name = "passportexp" placeholder = "Passport Expiration"> </input>
+        <br>
+        <br>
+        <input type = "text" name = "country" placeholder = "Passport Country"> </input>
+
+        <p>DOB</p>
+        <input type = "date" name = "dob" placeholder = "DOB"> </input>
+      </div>
+
+      <div id="staff" class = "toggleForm">
+        <input type = "text" name = "username" placeholder = "Username"> </input>
+        <br>
+        <br>
+        <input type = "text" name = "first_name" placeholder = "First Name"> </input>
+        <br>
+        <br>
+        <input type = "text" name = "last_name" placeholder = "Last Name"> </input>
+        <br>
+        <br>
+        <input type = "text" name = "airline" placeholder = "Airline Name"> </input>
+        <br>
+        <br>
+        <p> Role </p>
+        <select>
+          <option>Admin</option>
+          <option>Operator</option>
+          <option>Both</option>
+        </select>
+        <p>DOB</p>
+        <input type = "date" name = "dob" placeholder = "DOB"> </input>
+      </div>
+
+      <input class = "toggleForm" id = 'pwd' type = "password" name = "password" placeholder = "Password" required> </input>
       <br>
       <br>
-      <input type = "password" name = "password" placeholder = "Password" required> </input>
       <!-- can implement later to confirm pwd
       <br>
       <br>
       <input type = "password" name = "password2" placeholder = "Confirm Password" required> </input> -->
-      <br>
-      <br>
-      <input type = "number" name = "buildingnum" placeholder = "Building Number" required> </input>
-      <br>
-      <br>
-      <input type = "text" name = "street" placeholder = "Street" required> </input>
-      <br>
-      <br>
-      <input type = "text" name = "city" placeholder = "City" required> </input>
-      <br>
-      <br>
-      <input type = "text"  name = "state" placeholder = "State" required> </input>
-      <p>Phone Number</p>
-      <input type = "tel"  name = "tel" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" placeholder = "XXX-XXX-XXXX" required> </input>
-      <p>Passport Number</p>
-      <input type = "text" name = "passportid" placeholder = "Passport Number" required> </input>
-      <p>Passport Expiration</p>
-      <input type = "date" name = "passportexp" placeholder = "Passport Expiration" required> </input>
-      <br>
-      <br>
-      <input type = "text" name = "country" placeholder = "Passport Country" required> </input>
 
-      <p>DOB</p>
-      <input type = "date" name = "dob" placeholder = "DOB" required> </input>
-      <br>
-      <br>
       <button type = "submit"> Register </button>
       {% if error %}
         <p class = "error"> <strong>Error:</strong></p>
       {% endif %}
     </form>
     <p> Already have an account? <a href="{{ url_for('login') }}"> Login. </a> </p>
-    </main>
+    
+  
+  </main>
 
-    <script src="script.js"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
   </body>
 </html>

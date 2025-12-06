@@ -38,7 +38,14 @@
     <h1> Login </h1>
     <main>
     <form action="/loginAuth" method = "POST">
-      <input type = "text" name = "username" placeholder = "Username" required> </input>
+      <select name = "login_type">
+        <option value="" disabled selected>Account Type</option>
+        <option value = 'customer'>Customer</option>
+        <option value = 'agent'>Booking Agent</option>
+        <option value = 'staff'>Airline Staff</option>
+      </select>
+
+      <input type = "text" name = "username" placeholder = "Email/Username" required> </input>
       <br>
       <br>
       <input type = "password" name = "password" placeholder = "Password" required> </input>
@@ -49,6 +56,6 @@
     </form>
 
     </main>
-    <script src="script.js"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
   </body>
 </html>

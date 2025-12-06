@@ -10,7 +10,7 @@ CREATE TABLE `airline` (
 
 CREATE TABLE `airline_staff` (
     `username` varchar(50) NOT NULL,
-    `password` varchar(50) NOT NULL,
+    `password` varchar(255) NOT NULL,
     `first_name` varchar(50) NOT NULL,
     `last_name` varchar(50) NOT NULL,
     `date_of_birth` date NOT NULL,
@@ -40,7 +40,7 @@ CREATE TABLE `airport` (
 
 CREATE TABLE `booking_agent` (
  `email` varchar(50) NOT NULL,
- `password` varchar(50) NOT NULL,
+ `password` varchar(255) NOT NULL,
  PRIMARY KEY(`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
