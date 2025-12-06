@@ -34,7 +34,43 @@ function registerForm(){
     document.getElementById("pwd").style.display = "block";
     staffInput.forEach(f => f.required = true);
   }
-  else{
+  else
+  {
     console.log('hi3');
   }
 }
+
+function searchOption()
+{
+  event.preventDefault();
+  console.log("1");
+  const type = document.getElementById("search_select").value;
+  prices = document.getElementsByClassName("togglePrice");
+
+  for (let i = 0; i < prices.length; i++) 
+  {
+    if (type === "purchase") 
+    {
+      console.log("search1");
+      prices[i].style.display = "inline";
+    } 
+    else
+    {
+      console.log("search2");
+      prices[i].style.display = "none";
+    }
+  }
+}
+
+
+// var submit = $('.submit-btn');
+// var container = $('.container');
+
+// submit.on("click", printName);
+
+// function printName()
+// {
+//   event.preventDefault(); // this prevents the page from reloading!
+//   var name = $('.name').val();
+//   container.append(`<p> ${name}</p>`)
+// }

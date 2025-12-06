@@ -28,7 +28,6 @@ def loginAuth():
     pwd_bytes = password.encode('utf-8')
 	
     print(request.form)
-    print(email, pwd_bytes)
 
     #Send query to database by calling execute method of cursor
     cursor = conn.cursor()
@@ -124,11 +123,51 @@ def registerAuth():
         
         return redirect(url_for('home'))
 
+@app.route('/flightSearch',methods =['POST'])
+def flightSearch():
+    search_type = request.form['search_type']
+    origin = request.form['origin']
+    dest = request.form['dest']
+    # city = request.form['city']
+    dep_date = request.form['dep_date']
+    arr_date = request.form['arr_date']
+
+    cursor = conn.cursor()
+
+    if (search_type == "upcoming" or search_type == "purchase"):
+        query = 'SELECT * FROM flight WHERE departure_airport = %s AND arrival_airport = %s AND DATE(departure_time) = %s AND DATE(arrival_time) = %s AND status = "upcoming"'
+    elif (search_type == "inprogress"):
+        query = 'SELECT * FROM flight WHERE departure_airport = %s AND arrival_airport = %s AND DATE(departure_time) = %s AND DATE(arrival_time) = %s AND status = "in-progress"'
+
+    cursor.execute(query,(origin,dest,dep_date,arr_date ))
+    flights = cursor.fetchall()
+    cursor.close()
+    error = None
+
+    if (flights):
+        result = "Flights found"
+    else:
+        result = "No flights found"
+    return render_template("flight_search.html",error=error,result=result,flights=flights) #add in specifci html file
+
+
 @app.route('/cust_dashboard')
 def cust_dashboard():
     if 'username' not in session:
         return redirect(url_for('login'))
     return render_template('cust_dashboard.html')
+
+@app.route('/purchased_flights',methods=['GET'])
+def purchased_flights():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+    return render_template('purchased_flights.html')
+
+@app.route('/spending',methods=['GET'])
+def spending():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+    return render_template('spending.html')
 
 @app.route('/register',methods=['GET'])
 def register():
@@ -140,36 +179,24 @@ def login():
 
 @app.route('/logout')
 def logout():
-    session.pop('username', None)
+    session.clear()
     return redirect(url_for('login'))
-
-@app.route('/upcoming',methods=['GET'])
-def upcoming():
-    return render_template('upcoming.html')
-
-@app.route('/staff_dashboard',methods=['GET'])
-def staff_dashboard():
-    return render_template('staff_dashboard.html')
-
-@app.route('/agent_dashboard',methods=['GET'])
-def agent_dashboard():
-    return render_template('agent_dashboard.html')
-
-@app.route('/inprogress',methods=['GET'])
-def inprogress():
-    return render_template('inprogress.html')
-
-@app.route('/purchased_flights',methods=['GET'])
-def purchased_flights():
-    return render_template('purchased_flights.html')
 
 @app.route('/flight_search',methods=['GET'])
 def flight_search():
     return render_template('flight_search.html')
 
-@app.route('/spending',methods=['GET'])
-def spending():
-    return render_template('spending.html')
+@app.route('/staff_dashboard',methods=['GET'])
+def staff_dashboard():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+    return render_template('staff_dashboard.html')
+
+@app.route('/agent_dashboard',methods=['GET'])
+def agent_dashboard():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+    return render_template('agent_dashboard.html')
 
 @app.route('/',methods=['GET'])
 def home():

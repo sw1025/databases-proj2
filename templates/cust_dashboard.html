@@ -18,22 +18,24 @@
       <ul>
         <li class = "navTitle"> <a href="{{ url_for('home') }}">  Home </a>
         </li>
-        <li class = "navTitle"> <a href="{{ url_for('inprogress') }}">  In Progress Flights </a>
-        </li>
-        <li class = "navTitle"> <a href="{{ url_for('upcoming') }}">  Upcoming Flights </a>
+        <li class = "navTitle"> <a href="{{ url_for('flight_search') }}">  Flight Search </a>
         </li>
       </ul>
     </nav>
+    {# {% if 'username' in session %}
+      {% if session['acc_type'] == 'customer'%}
+        <li class = "navTitle"> <a href="{{url_for('purchased_flights')}}"> Purchased Flights </a> </li>
+        <li class = "navTitle"> <a href="{{url_for('flight_search')}}"> Flight Search </a> </li>
+        <li class = "navTitle"> <a href="{{url_for('spending')}}"> Past Spending </a> </li>
+      {% if session['acc_type'] == 'agent'%}
+      {% if session['acc_type'] == 'staff'%}
+    {%endif%} #}
+
     <h1> Customer Dashboard </h1>
     <p> testing this out?</p>
 
-    <button> <a href="{{url_for('purchased_flights')}}"> Purchased Flights </a> </button>
-    <button> <a href="{{url_for('flight_search')}}"> Flight Search </a> </button>
-    <button> <a href="{{url_for('spending')}}"> Past Spending </a> </button>
-
     <button> <a href="{{ url_for('logout') }}"> Logout </a> </button>
     
-
     <script src="{{ url_for('static', filename='script.js') }}"></script>
   </body>
 </html>

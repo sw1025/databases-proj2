@@ -34,6 +34,10 @@ nav{
   display:none;
 }
 
+.togglePrice{
+  display:none;
+}
+
 body{
   font-family: 'Roboto', sans-serif;
 }

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Flight Search</title>
+    
+    <link rel="icon" href="https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/How_to_use_icon.svg/1200px-How_to_use_icon.svg.png">
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400&display=swap" rel="stylesheet">
+    
+  </head>
+  <body>
+    <nav>
+      <ul>
+        <li class = "navTitle"> <a href="{{ url_for('home') }}">  Home </a>
+        </li>
+        <li class = "navTitle"> <a href="{{ url_for('flight_search') }}">  Flight Search </a>
+        </li>
+      </ul>
+    </nav>
+    <h1> Flight Search </h1>
+    <form action = "/flightSearch" method = "POST">
+      <select name = "search_type" onchange="searchOption()"  id = "search_select" required>
+        <option value="" disabled selected> Flight Search Option</option>
+        <option value = 'upcoming'> Upcoming </option>
+        <option value = 'inprogress'> In Progress </option>
+        {% if session.get('username') %}
+          <option value="purchase">Purchase</option>
+        {% endif %}
+      </select>
+      <br>
+      <br>
+      <input type = "text" name = "origin" placeholder = "Origin Airport"> </input>
+      <br>
+      <br>
+      <input type = "text" name = "dest" placeholder = "Destination Airport"> </input>
+      <br>
+      <br>
+      <input type = "text" name = "city" placeholder = "City"> </input>
+      <br>
+      <br>
+      <p> Departure Date </p>
+      <input type = "date" name = "dep_date"> </input>
+      <p> Arrival Date </p>
+      <input type = "date" name = "arr_date"> </input>
+      <br>
+      <br>
+      <button type = "submit"> Search </button>
+    </form>
+    <p> {{result}} </p>
+    {% if flights%}
+      <ul>
+        {% for f in flights %}
+        <li>{{ f['airline_name'] }} Flight #{{ f['flight_num'] }}: {{ f['departure_airport'] }} → {{ f['arrival_airport'] }}</li>
+        <span class="togglePrice">${{ f['base_price'] }}</span>
+        {% endfor %}
+      </ul>
+    {% endif%}
+    
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+  </body>
+</html>

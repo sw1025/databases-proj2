@@ -28,9 +28,7 @@
       <ul>
         <li class = "navTitle"> <a href="{{ url_for('home') }}">  Home </a>
         </li>
-        <li class = "navTitle"> <a href="{{ url_for('inprogress') }}">  In Progress Flights </a>
-        </li>
-        <li class = "navTitle"> <a href="{{ url_for('upcoming') }}">  Upcoming Flights </a>
+        <li class = "navTitle"> <a href="{{ url_for('flight_search') }}">  Flight Search </a>
         </li>
       </ul>
     </nav>
@@ -115,7 +113,7 @@
 
       <button type = "submit"> Register </button>
       {% if error %}
-        <p class = "error"> <strong>Error:</strong></p>
+        <p class = "error"> <strong>Error:</strong>{{error}}</p>
       {% endif %}
     </form>
     <p> Already have an account? <a href="{{ url_for('login') }}"> Login. </a> </p>
