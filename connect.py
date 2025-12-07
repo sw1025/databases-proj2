@@ -680,7 +680,32 @@ def purchase_with_seat_class():
         cursor.execute("""
             INSERT INTO ticket(ticket_id, airline_name, flight_num, airplane_id, seat_class_id)
             VALUES(%s,%s,%s,%s,%s)
-        """,
+        """, (next_id, airline, flight_num, airplane_id, seat_class_id))
+
+        # price multiplier
+        class_multiplier = {
+            "1": 1.0,
+            "2": 1.5,
+            "3": 2.0,
+            "4": 3.0
+        }
+        final_price = int(base_price * class_multiplier.get(seat_class_id, 1.0))
+
+        cursor.execute("""
+            INSERT INTO purchases(ticket_id, customer_email, booking_agent_email, purchase_date, purchase_price)
+            VALUES (%s, %s, %s, CURDATE(), %s)
+        """, (next_id, customer_email, buyer if is_agent else None, final_price))
+
+        conn.commit()
+        cursor.close()
+        return f"Purchased seat class {seat_class_id}."
+
+    cursor.execute("SELECT DISTINCT seat_class_id FROM seat_class")
+    classes = [c['seat_class_id'] for c in cursor.fetchall()]
+    cursor.close()
+
+    return render_template('purchase_with_seat_class.html', classes=classes)
+
 
 
 #run app on localhost port 5000
