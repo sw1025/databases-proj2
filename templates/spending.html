@@ -47,8 +47,15 @@
         {%endfor%}
         </ul>
     {% endif%}
+
+    <form action = "/spending" method = "POST">
+      <p>Specify Date Range</p>
+      <p>Date Range Start</p> <input type="date" name = "start_date"> 
+      <p>Date Range Start</p> <input type="date" name = "end_date">
+      <button type="submit"> Submit </button>
+    </form>
     <br>
-      <p> Total Spent:</p>{{total}}
+    <p> Total Spent (Last 12 Months): {{total}}</p>
     <h4> Spending (Last 6 Months)</h4>
 
 <div style="width: 600px;">

@@ -340,26 +340,39 @@ def purchase():
     return redirect(url_for('spending'))
 
 
-@app.route('/spending',methods=['GET'])
+@app.route('/spending',methods=['GET','POST'])
 def spending():
     if 'username' not in session:
         return redirect(url_for('login'))
     cursor = conn.cursor()
     user = session['username']
+    start_date = request.form.get('start_date')
+    end_date = request.form.get('end_date')
 
-    # total spent (last 12 months)
-    cursor.execute("""
-        SELECT SUM(purchase_price) AS total
-        FROM purchases
-        WHERE customer_email=%s
-          AND purchase_date >= DATE_SUB(NOW(), INTERVAL 12 MONTH)
-    """, (user,))
-    total = cursor.fetchone()['total'] or 0
+    if(start_date and end_date):
+        cursor.execute('SELECT SUM(purchase_price) AS total ' \
+        'FROM purchases ' \
+        'WHERE customer_email=%s AND purchase_date BETWEEN %s AND %s ', (user,start_date,end_date))
+        total = cursor.fetchone()['total'] or 0
+    else:
+        # total spent (last 12 months)
+        cursor.execute("""
+            SELECT SUM(purchase_price) AS total
+            FROM purchases
+            WHERE customer_email=%s
+            AND purchase_date >= DATE_SUB(NOW(), INTERVAL 12 MONTH)
+        """, (user,))
+        total = cursor.fetchone()['total'] or 0
 
-    # last 6 months breakdown
-    cursor.execute('SELECT DATE_FORMAT(purchase_date, "%%Y-%%m") AS month, ' \
+    if(start_date and end_date):
+        cursor.execute('SELECT DATE_FORMAT(purchase_date, "%%Y-%%m") AS month, ' \
     'SUM(purchase_price) AS amount FROM purchases WHERE customer_email=%s ' \
-    'AND purchase_date >= DATE_SUB(NOW(), INTERVAL 6 MONTH) GROUP BY month ORDER BY month', (user,))
+    'AND purchase_date BETWEEN %s AND %s GROUP BY month ORDER BY month', (user,start_date,end_date))
+    else:
+        # last 6 months
+        cursor.execute('SELECT DATE_FORMAT(purchase_date, "%%Y-%%m") AS month, ' \
+        'SUM(purchase_price) AS amount FROM purchases WHERE customer_email=%s ' \
+        'AND purchase_date >= DATE_SUB(NOW(), INTERVAL 6 MONTH) GROUP BY month ORDER BY month', (user,))
 
     rows = cursor.fetchall()
     months = [row['month'] for row in rows]
