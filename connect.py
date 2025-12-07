@@ -100,7 +100,7 @@ def registerAuth():
         query = 'SELECT * FROM airline_staff WHERE username = %s'
 
     cursor.execute(query,(username,))
-
+    
     data = cursor.fetchone()
 
     if(data):
