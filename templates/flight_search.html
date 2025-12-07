@@ -65,7 +65,7 @@
     {% if flights%}
       <ul>
         {% for f in flights %}
-        <li>{{ f['airline_name'] }} Flight #{{ f['flight_num'] }}: {{ f['departure_airport'] }} → {{ f['arrival_airport'] }}</li>
+        <li>{{ f['airline_name'] }} Flight #{{ f['flight_num'] }}: {{ f['departure_airport'] }} → {{ f['arrival_airport'] }} Flight Time: {{ f['departure_time'] }}→ {{ f['departure_time'] }}</li>
         <span class="togglePrice">${{ f['base_price'] }}</span>
         {% endfor %}
       </ul>

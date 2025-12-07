@@ -1,41 +1,12 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width">
-    <title>Dashboard</title>
-    
-    <link rel="icon" href="https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/How_to_use_icon.svg/1200px-How_to_use_icon.svg.png">
-    
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400&display=swap" rel="stylesheet">
-    
-  </head>
-  <body>
-    <nav>
-      <ul>
-        <li class = "navTitle"> <a href="{{ url_for('home') }}">  Home </a>
-        </li>
-        <li class = "navTitle"> <a href="{{ url_for('flight_search') }}">  Flight Search </a>
-        </li>
-      </ul>
-    </nav>
-    {# {% if 'username' in session %}
-      {% if session['acc_type'] == 'customer'%}
-        <li class = "navTitle"> <a href="{{url_for('purchased_flights')}}"> Purchased Flights </a> </li>
-        <li class = "navTitle"> <a href="{{url_for('flight_search')}}"> Flight Search </a> </li>
-        <li class = "navTitle"> <a href="{{url_for('spending')}}"> Past Spending </a> </li>
-      {% if session['acc_type'] == 'agent'%}
-      {% if session['acc_type'] == 'staff'%}
-    {%endif%} #}
+<head>
+    <title>Customer Dashboard</title>
+</head>
+<body>
+<h2>Welcome, {{ session['username'] }}!</h2>
+<p>You are logged in as a customer.</p>
 
-    <h1> Customer Dashboard </h1>
-    <p> testing this out?</p>
-
-    <button> <a href="{{ url_for('logout') }}"> Logout </a> </button>
-    
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
-  </body>
+<p><a href="{{ url_for('logout') }}">Log out</a></p>
+</body>
 </html>
