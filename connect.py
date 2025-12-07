@@ -1,6 +1,8 @@
 #Referenced Flask slides
 # referenced GeekforGeeks.W3Schools
 # https://www.geeksforgeeks.org/python/hashing-passwords-in-python-with-bcrypt/
+#https://www.chartjs.org/docs/latest/charts/bar.html
+#https://www.youtube.com/watch?v=taEVTka9UcA
 
 from flask import Flask, render_template, request, session, url_for, redirect 
 import bcrypt
@@ -345,6 +347,24 @@ def spending():
     cursor = conn.cursor()
     user = session['username']
 
+    # total spent (last 12 months)
+    cursor.execute("""
+        SELECT SUM(purchase_price) AS total
+        FROM purchases
+        WHERE customer_email=%s
+          AND purchase_date >= DATE_SUB(NOW(), INTERVAL 12 MONTH)
+    """, (user,))
+    total = cursor.fetchone()['total'] or 0
+
+    # last 6 months breakdown
+    cursor.execute('SELECT DATE_FORMAT(purchase_date, "%%Y-%%m") AS month, ' \
+    'SUM(purchase_price) AS amount FROM purchases WHERE customer_email=%s ' \
+    'AND purchase_date >= DATE_SUB(NOW(), INTERVAL 6 MONTH) GROUP BY month ORDER BY month', (user,))
+
+    rows = cursor.fetchall()
+    months = [row['month'] for row in rows]
+    amounts = [float(row['amount']) for row in rows]
+
     purchases = 'SELECT purchases.purchase_date,purchases.purchase_price,ticket.ticket_id ' \
     'FROM flight ' \
     'JOIN ticket on flight.flight_num = ticket.flight_num ' \
@@ -357,7 +377,8 @@ def spending():
     spent = cursor.fetchall()
     cursor.close()
 
-    return render_template('spending.html',spent=spent)
+    return render_template('spending.html',spent=spent,months=months,amounts=amounts,total=total)
+
 
 @app.route('/register',methods=['GET'])
 def register():

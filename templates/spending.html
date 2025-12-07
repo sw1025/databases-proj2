@@ -48,6 +48,42 @@
         </ul>
     {% endif%}
     <br>
+      <p> Total Spent:</p>{{total}}
+    <h4> Spending (Last 6 Months)</h4>
+
+<div style="width: 600px;">
+  <canvas id="myChart"></canvas>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+{%block javascript%}
+<script>
+  const ctx = document.getElementById('myChart');
+
+  const chartLabels = {{ months | tojson }};
+  const chartData = {{ amounts | tojson }};
+
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: chartLabels,
+      datasets: [{
+        label: 'Monthly Spending',
+        data: chartData,
+        borderWidth: 1
+      }]
+    },
+    options: {
+      scales: {
+        y: {
+          beginAtZero: true
+        }
+      }
+    }
+  });
+</script>
+{% endblock javascript%}
     
     <br>
     <a href="{{url_for('cust_dashboard')}}"> Back to Dashboard </a>
