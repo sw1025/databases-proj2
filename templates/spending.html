@@ -31,7 +31,12 @@
       {% if session['acc_type'] == 'staff'%}
     {%endif%} #}
     <h1> Past Spending </h1>
-    
+
+    {{spent}}
+    <br>
+    <br>
+    <a href="{{url_for('cust_dashboard')}}"> Back to Dashboard </a>
+
     <script src="{{ url_for('static', filename='script.js') }}"></script>
   </body>
 </html>

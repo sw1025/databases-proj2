@@ -28,7 +28,7 @@
         <option value="" disabled selected> Flight Search Option</option>
         <option value = 'upcoming'> Upcoming </option>
         <option value = 'inprogress'> In Progress </option>
-        {% if session.get('username') %}
+        {% if session.get('username') and session.get('login_type') == 'customer'%}
           <option value="purchase">Purchase</option>
         {% endif %}
       </select>
@@ -41,8 +41,6 @@
         <br>
         <input type = "text" name = "dest" placeholder = "Destination Airport"> </input>
         <input type = "text" name = "a_city" placeholder = "Arrival City"> </input>
-        <br>
-        <br>
         <br>
         <br>
         <p> Departure Date </p>
@@ -67,8 +65,19 @@
       <ul>
         {% for f in flights %}
         <li>{{ f['airline_name'] }} Flight #{{ f['flight_num'] }}: {{ f['departure_airport'] }} → {{ f['arrival_airport'] }} Flight Time: {{ f['departure_time'] }}→ {{ f['departure_time'] }}</li>
+        <br>
         <span class="togglePrice">${{ f['base_price'] }}</span>
+        
+        <form action="{{ url_for('purchase') }}" method="POST">
+          <input type="hidden" name="airline_name" value="{{ f['airline_name'] }}">
+          <input type="hidden" name="flight_num" value="{{ f['flight_num'] }}">
+          <input type="hidden" name="departure_time" value="{{ f['departure_time'] }}">
+          <button type="submit">Buy</button>
+        </form>
+        <p> --- </p>
+        <br>
         {% endfor %}
+        <br>
       </ul>
     {% endif%}
     

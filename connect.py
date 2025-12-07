@@ -23,6 +23,7 @@ def loginAuth():
     login_type = request.form['login_type']
     username = request.form['username']   # customers + agents use email; staff uses username
     password = request.form['password']
+    session['login_type'] = login_type
 
     pwd_bytes = password.encode('utf-8')
 
@@ -231,13 +232,76 @@ def cust_dashboard():
 def purchased_flights():
     if 'username' not in session:
         return redirect(url_for('login'))
-    return render_template('purchased_flights.html')
+
+    cursor = conn.cursor()
+    user = session['username']
+
+    past_flights = 'SELECT ticket.ticket_id,ticket.airline_name,ticket.flight_num,flight.departure_airport,' \
+    'flight.departure_time, flight.arrival_airport,flight.arrival_time, flight.status ' \
+    'FROM flight ' \
+    'JOIN ticket on flight.flight_num = ticket.flight_num ' \
+    'JOIN purchases on ticket.ticket_id = purchases.ticket_id ' \
+    'JOIN customer on purchases.customer_email = customer.email ' \
+    'WHERE customer.email = %s '
+
+    cursor.execute(past_flights, (user,))
+
+    flights = cursor.fetchall()
+    cursor.close()
+
+    return render_template('purchased_flights.html',flights = flights)
+
+@app.route('/purchase', methods=['POST'])
+def purchase():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+    
+    # if session.get('login_type') != 'customer':
+    #     return "Unauthorized", 403
+
+    airline = request.form['airline_name']
+    flight_num = request.form['flight_num']
+    departure_time = request.form['departure_time']
+    user = session['username']
+
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT MAX(ticket_id) AS max FROM ticket")
+    t_id = (cursor.fetchone()['max'] or 0) + 1
+
+    insert_ticket = 'INSERT INTO ticket (ticket_id, airline_name, flight_num) VALUES (%s,%s, %s)'
+
+    cursor.execute(insert_ticket, (t_id,airline, flight_num))
+
+    insert_purchase = 'INSERT INTO purchases (ticket_id, customer_email, purchase_date) VALUES (%s, %s,NOW())'
+    
+    cursor.execute(insert_purchase, (t_id, user))
+
+    conn.commit()
+    cursor.close()
+
+    return redirect(url_for('spending'))
+
 
 @app.route('/spending',methods=['GET'])
 def spending():
     if 'username' not in session:
         return redirect(url_for('login'))
-    return render_template('spending.html')
+    cursor = conn.cursor()
+    user = session['username']
+
+    purchases = 'SELECT flight.base_price ' \
+    'FROM flight ' \
+    'JOIN ticket on flight.flight_num = ticket.flight_num ' \
+    'JOIN purchases on ticket.ticket_id = purchases.ticket_id ' \
+    'JOIN customer on purchases.customer_email = customer.email ' \
+    'WHERE customer.email = %s '
+
+    cursor.execute(purchases, (user,))
+
+    spent = cursor.fetchall()
+    cursor.close()
+    return render_template('spending.html',spent=spent)
 
 @app.route('/register',methods=['GET'])
 def register():
@@ -254,7 +318,7 @@ def login():
 @app.route('/logout')
 def logout():
     session.clear()
-    return redirect(url_for('login'))
+    return redirect(url_for('home'))
 
 @app.route('/flight_search',methods=['GET'])
 def flight_search():
