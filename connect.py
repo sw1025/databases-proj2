@@ -1,5 +1,5 @@
 #Referenced Flask slides
-# referenced GeekforGeeks.
+# referenced GeekforGeeks.W3Schools
 # https://www.geeksforgeeks.org/python/hashing-passwords-in-python-with-bcrypt/
 
 from flask import Flask, render_template, request, session, url_for, redirect 
@@ -345,7 +345,7 @@ def spending():
     cursor = conn.cursor()
     user = session['username']
 
-    purchases = 'SELECT purchases.purchase_price,ticket.ticket_id ' \
+    purchases = 'SELECT purchases.purchase_date,purchases.purchase_price,ticket.ticket_id ' \
     'FROM flight ' \
     'JOIN ticket on flight.flight_num = ticket.flight_num ' \
     'JOIN purchases on ticket.ticket_id = purchases.ticket_id ' \
@@ -356,6 +356,7 @@ def spending():
 
     spent = cursor.fetchall()
     cursor.close()
+
     return render_template('spending.html',spent=spent)
 
 @app.route('/register',methods=['GET'])
