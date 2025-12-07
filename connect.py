@@ -231,8 +231,514 @@ def agent_dashboard():
 def home():
     return render_template('index.html')
 
+@app.route('/agent/view_flights', methods=['GET', 'POST'])
+def agent_view_flights():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+
+    agent_email = session['username']
+    cursor = conn.cursor()
+    flights = []
+
+    if request.method == 'POST':
+        origin = request.form['origin']
+        dest = request.form['dest']
+        start = request.form['start']
+        end = request.form['end']
+
+        query = """
+        SELECT flight.*
+        FROM booking_agent AS ba
+        JOIN purchases AS p ON p.booking_agent_email = ba.email
+        JOIN ticket AS t ON t.ticket_id = p.ticket_id
+        JOIN flight ON flight.flight_num = t.flight_num 
+            AND flight.airline_name = t.airline_name
+        WHERE ba.email = %s
+        AND (%s = '' OR flight.departure_airport = %s)
+        AND (%s = '' OR flight.arrival_airport = %s)
+        AND (DATE(flight.departure_time) BETWEEN %s AND %s)
+        """
+
+        cursor.execute(query, (agent_email, origin, origin, dest, dest, start, end))
+        flights = cursor.fetchall()
+
+    cursor.close()
+    return render_template('agent_view_flights.html', flights=flights)
+
+
+@app.route('/agent/search_flights', methods=['GET', 'POST'])
+def agent_search_flights():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+
+    cursor = conn.cursor()
+    agent_email = session['username']
+
+    # Airlines the agent can sell tickets for
+    cursor.execute("SELECT airline_name FROM agent_airline_authorization WHERE agent_email=%s",
+                   (agent_email,))
+    authorized = [row['airline_name'] for row in cursor.fetchall()]
+    flights = []
+
+    if request.method == "POST":
+        origin = request.form['origin']
+        dest = request.form['dest']
+
+        query = """
+        SELECT *
+        FROM flight
+        WHERE airline_name IN %s
+        AND departure_airport=%s
+        AND arrival_airport=%s
+        """
+
+        cursor.execute(query, (tuple(authorized), origin, dest))
+        flights = cursor.fetchall()
+
+    cursor.close()
+    return render_template("agent_search_flights.html", flights=flights, authorized=authorized)
+
+@app.route('/agent/purchase_ticket', methods=['GET', 'POST'])
+def agent_purchase_ticket():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+
+    agent_email = session['username']
+    cursor = conn.cursor()
+
+    if request.method == 'POST':
+        airline = request.form['airline']
+        flight_num = request.form['flight_num']
+        customer_email = request.form['customer_email']
+
+        # verify authorization
+        cursor.execute("""
+            SELECT * FROM agent_airline_authorization
+            WHERE agent_email=%s AND airline_name=%s
+        """, (agent_email, airline))
+
+        if cursor.fetchone() is None:
+            return "Not authorized for this airline."
+
+        # check seats sold
+        cursor.execute("""
+            SELECT COUNT(*) AS sold
+            FROM ticket
+            WHERE airline_name=%s AND flight_num=%s
+        """, (airline, flight_num))
+        sold = cursor.fetchone()['sold']
+
+        # get capacity
+        cursor.execute("""
+            SELECT seat_capacity
+            FROM airplane
+            WHERE airline_name=%s AND airplane_id=(
+                SELECT airplane_id FROM flight
+                WHERE airline_name=%s AND flight_num=%s
+            )
+        """, (airline, airline, flight_num))
+        capacity = cursor.fetchone()['seat_capacity']
+
+        if sold >= capacity:
+            return "Flight is full."
+
+        # new ticket_id
+        cursor.execute("SELECT MAX(ticket_id) AS max FROM ticket")
+        next_id = (cursor.fetchone()['max'] or 0) + 1
+
+        cursor.execute("""
+            INSERT INTO ticket(ticket_id, airline_name, flight_num)
+            VALUES (%s, %s, %s)
+        """, (next_id, airline, flight_num))
+
+        cursor.execute("""
+            INSERT INTO purchases(ticket_id, customer_email, booking_agent_email, purchase_date)
+            VALUES(%s, %s, %s, CURDATE())
+        """, (next_id, customer_email, agent_email))
+
+        conn.commit()
+        cursor.close()
+        return "Ticket purchased."
+
+    return render_template("agent_purchase.html")
+
+#Agent analytics
+@app.route('/agent/analytics')
+def agent_analytics():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+
+    agent_email = session['username']
+    cursor = conn.cursor()
+
+    # total commission last 30 days
+    cursor.execute("""
+        SELECT SUM(p.purchase_price * 0.1) AS commission
+        FROM purchases p
+        WHERE booking_agent_email=%s
+        AND p.purchase_date >= CURDATE() - INTERVAL 30 DAY
+    """, (agent_email,))
+    total_commission = cursor.fetchone()['commission']
+
+    # avg commission
+    cursor.execute("""
+        SELECT AVG(p.purchase_price * 0.1) AS avg_commission
+        FROM purchases p
+        WHERE booking_agent_email=%s
+        AND p.purchase_date >= CURDATE() - INTERVAL 30 DAY
+    """, (agent_email,))
+    avg_commission = cursor.fetchone()['avg_commission']
+
+    # tickets sold
+    cursor.execute("""
+        SELECT COUNT(*) AS total
+        FROM purchases
+        WHERE booking_agent_email=%s
+        AND purchase_date >= CURDATE() - INTERVAL 30 DAY
+    """, (agent_email,))
+    total_tickets = cursor.fetchone()['total']
+
+    # top 5 by tickets
+    cursor.execute("""
+        SELECT customer_email, COUNT(*) AS tickets
+        FROM purchases
+        WHERE booking_agent_email=%s
+        AND purchase_date >= CURDATE() - INTERVAL 6 MONTH
+        GROUP BY customer_email
+        ORDER BY tickets DESC
+        LIMIT 5
+    """, (agent_email,))
+    top_tickets = cursor.fetchall()
+
+    # top 5 by commission
+    cursor.execute("""
+        SELECT customer_email, SUM(purchase_price * 0.1) AS total_commission
+        FROM purchases
+        WHERE booking_agent_email=%s
+        AND purchase_date >= CURDATE() - INTERVAL 1 YEAR
+        GROUP BY customer_email
+        ORDER BY total_commission DESC
+        LIMIT 5
+    """, (agent_email,))
+    top_commission = cursor.fetchall()
+
+    cursor.close()
+
+    return render_template(
+        'agent_analytics.html',
+        total_commission=total_commission,
+        avg_commission=avg_commission,
+        total_tickets=total_tickets,
+        top_tickets=top_tickets,
+        top_commission=top_commission
+    )
+
+#staff routes
+@app.route('/staff/view_flights')
+def staff_view_flights():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT airline_name FROM airline_staff WHERE username=%s",
+                   (session['username'],))
+    airline = cursor.fetchone()['airline_name']
+
+    cursor.execute("""
+        SELECT *
+        FROM flight
+        WHERE airline_name=%s
+        AND departure_time BETWEEN NOW() AND NOW() + INTERVAL 30 DAY
+    """, (airline,))
+
+    flights = cursor.fetchall()
+    cursor.close()
+
+    return render_template('staff_view_flights.html', flights=flights)
+
+@app.route('/staff/passengers', methods=['GET', 'POST'])
+def staff_passengers():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+
+    passengers = []
+    if request.method == 'POST':
+        airline = request.form['airline']
+        flight_num = request.form['flight_num']
+
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT c.name, c.email
+            FROM ticket t
+            JOIN purchases p ON p.ticket_id=t.ticket_id
+            JOIN customer c ON c.email=p.customer_email
+            WHERE t.airline_name=%s AND t.flight_num=%s
+        """, (airline, flight_num))
+
+        passengers = cursor.fetchall()
+        cursor.close()
+
+    return render_template('staff_passengers.html', passengers=passengers)
+
+@app.route('/staff/customer_flights', methods=['GET', 'POST'])
+def staff_customer_flights():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+
+    cursor = conn.cursor()
+    cursor.execute("SELECT airline_name FROM airline_staff WHERE username=%s",
+                   (session['username'],))
+    airline = cursor.fetchone()['airline_name']
+    flights = []
+
+    if request.method == 'POST':
+        email = request.form['email']
+
+        cursor.execute("""
+            SELECT f.*
+            FROM flight f
+            JOIN ticket t ON f.flight_num = t.flight_num AND f.airline_name = t.airline_name
+            JOIN purchases p ON p.ticket_id = t.ticket_id
+            WHERE p.customer_email=%s AND f.airline_name=%s
+        """, (email, airline))
+
+        flights = cursor.fetchall()
+
+    cursor.close()
+    return render_template('staff_customer_flights.html', flights=flights)
+
+@app.route('/staff/update_status', methods=['POST'])
+def staff_update_status():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+
+    airline = request.form['airline']
+    flight_num = request.form['flight_num']
+    new_status = request.form['status']
+
+    cursor = conn.cursor()
+
+    # verify staff belongs to airline
+    cursor.execute("SELECT airline_name FROM airline_staff WHERE username=%s",
+                   (session['username'],))
+    staff_airline = cursor.fetchone()['airline_name']
+
+    if staff_airline != airline:
+        return "Not authorized."
+
+    cursor.execute("""
+        UPDATE flight
+        SET status=%s
+        WHERE airline_name=%s AND flight_num=%s
+    """, (new_status, airline, flight_num))
+
+    conn.commit()
+    cursor.close()
+    return "Status updated."
+
+#admin routes
+def is_admin(username):
+    cursor = conn.cursor()
+    cursor.execute("SELECT role FROM airline_staff WHERE username=%s", (username,))
+    role = cursor.fetchone()
+    cursor.close()
+    return role and role['role'] in ('admin', 'both')
+
+@app.route('/admin/add_airport', methods=['GET', 'POST'])
+def admin_add_airport():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+    if not is_admin(session['username']):
+        return "Access denied."
+
+    if request.method == 'POST':
+        name = request.form['airport_name']
+        city = request.form['airport_city']
+
+        cursor = conn.cursor()
+        cursor.execute("INSERT INTO airport VALUES (%s, %s)", (name, city))
+        conn.commit()
+        cursor.close()
+        return "Airport added!"
+
+    return render_template('admin_add_airport.html')
+
+@app.route('/admin/add_airplane', methods=['GET', 'POST'])
+def admin_add_airplane():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+    if not is_admin(session['username']):
+        return "Access denied."
+
+    cursor = conn.cursor()
+    cursor.execute("SELECT airline_name FROM airline_staff WHERE username=%s",
+                   (session['username'],))
+    airline = cursor.fetchone()['airline_name']
+
+    if request.method == 'POST':
+        airplane_id = request.form['airplane_id']
+        capacity = request.form['seat_capacity']
+
+        cursor.execute("""
+            INSERT INTO airplane (airline_name, airplane_id, seat_capacity)
+            VALUES (%s, %s, %s)
+        """, (airline, airplane_id, capacity))
+
+        conn.commit()
+        cursor.close()
+        return "Airplane added!"
+
+    return render_template('admin_add_airplane.html', airline=airline)
+
+@app.route('/admin/create_flight', methods=['GET', 'POST'])
+def admin_create_flight():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+    if not is_admin(session['username']):
+        return "Access denied."
+
+    cursor = conn.cursor()
+    cursor.execute("SELECT airline_name FROM airline_staff WHERE username=%s",
+                   (session['username'],))
+    airline = cursor.fetchone()['airline_name']
+
+    if request.method == 'POST':
+        flight_num = request.form['flight_num']
+        dep_airport = request.form['departure_airport']
+        dep_time = request.form['departure_time']
+        arr_airport = request.form['arrival_airport']
+        arr_time = request.form['arrival_time']
+        price = request.form['price']
+        airplane_id = request.form['airplane_id']
+
+        cursor.execute("""
+            INSERT INTO flight
+            (airline_name, flight_num, departure_airport, departure_time,
+             arrival_airport, arrival_time, base_price, status, airplane_id)
+            VALUES (%s,%s,%s,%s,%s,%s,%s,'upcoming',%s)
+        """, (airline, flight_num, dep_airport, dep_time,
+              arr_airport, arr_time, price, airplane_id))
+
+        conn.commit()
+        cursor.close()
+        return "Flight created!"
+
+    return render_template('admin_create_flight.html', airline=airline)
+
+@app.route('/admin/add_agent_authorization', methods=['GET', 'POST'])
+def admin_add_agent_authorization():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+    if not is_admin(session['username']):
+        return "Access denied."
+
+    cursor = conn.cursor()
+    cursor.execute("SELECT airline_name FROM airline_staff WHERE username=%s",
+                   (session['username'],))
+    airline = cursor.fetchone()['airline_name']
+
+    if request.method == 'POST':
+        agent_email = request.form['agent_email']
+
+        cursor.execute("""
+            INSERT INTO agent_airline_authorization (agent_email, airline_name)
+            VALUES (%s, %s)
+        """, (agent_email, airline))
+
+        conn.commit()
+        cursor.close()
+        return "Agent authorized!"
+
+    return render_template('admin_add_agent.html', airline=airline)
+
+#anti-automation - seat class
+@app.route('/purchase_with_seat_class', methods=['GET', 'POST'])
+def purchase_with_seat_class():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+
+    cursor = conn.cursor()
+    buyer = session['username']
+
+    # is agent?
+    cursor.execute("SELECT * FROM booking_agent WHERE email=%s", (buyer,))
+    is_agent = cursor.fetchone() is not None
+
+    if request.method == 'POST':
+        airline = request.form['airline']
+        flight_num = request.form['flight_num']
+        customer_email = request.form['customer_email']
+        seat_class_id = request.form['seat_class_id']
+
+        # get airplane + base price
+        cursor.execute("""
+            SELECT airplane_id, base_price
+            FROM flight
+            WHERE airline_name=%s AND flight_num=%s
+        """, (airline, flight_num))
+        flight = cursor.fetchone()
+        airplane_id = flight['airplane_id']
+        base_price = flight['base_price']
+
+        # class capacity
+        cursor.execute("""
+            SELECT seat_capacity
+            FROM seat_class
+            WHERE airline_name=%s AND airplane_id=%s AND seat_class_id=%s
+        """, (airline, airplane_id, seat_class_id))
+        seat_data = cursor.fetchone()
+
+        capacity = seat_data['seat_capacity']
+
+        cursor.execute("""
+            SELECT COUNT(*) AS sold
+            FROM ticket
+            WHERE airline_name=%s AND flight_num=%s
+              AND airplane_id=%s AND seat_class_id=%s
+        """, (airline, flight_num, airplane_id, seat_class_id))
+        sold = cursor.fetchone()['sold']
+
+        if sold >= capacity:
+            return f"Seat class {seat_class_id} full."
+
+        # new ticket id
+        cursor.execute("SELECT MAX(ticket_id) AS max FROM ticket")
+        next_id = (cursor.fetchone()['max'] or 0) + 1
+
+        cursor.execute("""
+            INSERT INTO ticket(ticket_id, airline_name, flight_num, airplane_id, seat_class_id)
+            VALUES(%s,%s,%s,%s,%s)
+        """, (next_id, airline, flight_num, airplane_id, seat_class_id))
+
+        # price multiplier
+        class_multiplier = {
+            "1": 1.0,
+            "2": 1.5,
+            "3": 2.0,
+            "4": 3.0
+        }
+        final_price = int(base_price * class_multiplier.get(seat_class_id, 1.0))
+
+        cursor.execute("""
+            INSERT INTO purchases(ticket_id, customer_email, booking_agent_email, purchase_date, purchase_price)
+            VALUES (%s, %s, %s, CURDATE(), %s)
+        """, (next_id, customer_email, buyer if is_agent else None, final_price))
+
+        conn.commit()
+        cursor.close()
+        return f"Purchased seat class {seat_class_id}."
+
+    cursor.execute("SELECT DISTINCT seat_class_id FROM seat_class")
+    classes = [c['seat_class_id'] for c in cursor.fetchall()]
+    cursor.close()
+
+    return render_template('purchase_with_seat_class.html', classes=classes)
+
+
 
 #run app on localhost port 5000
 #debug = True means no need to restart flask for changes to go through
 if __name__ == "__main__":
 	app.run('127.0.0.1',5000,debug = True)
+

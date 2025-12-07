@@ -1,0 +1,15 @@
+<h1>Your Purchased Flights</h1>
+
+<form method="POST">
+  Origin: <input name="origin"><br>
+  Destination: <input name="dest"><br>
+  Start Date: <input type="date" name="start"><br>
+  End Date: <input type="date" name="end"><br>
+  <button type="submit">Filter</button>
+</form>
+
+<ul>
+  {% for f in flights %}
+    <li>{{ f.airline_name }} Flight {{ f.flight_num }} — {{ f.departure_airport }} → {{ f.arrival_airport }}</li>
+  {% endfor %}
+</ul>
