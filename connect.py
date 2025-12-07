@@ -128,7 +128,8 @@ def flightSearch():
     search_type = request.form['search_type']
     origin = request.form['origin']
     dest = request.form['dest']
-    city = request.form['city']
+    a_city = request.form['a_city']
+    d_city = request.form['d_city']
     dep_date = request.form['dep_date']
     arr_date = request.form['arr_date']
     airline_name = request.form['airline_name']
@@ -136,9 +137,34 @@ def flightSearch():
     
     cursor = conn.cursor()
 
+    param = []
+
     if (search_type == "upcoming" or search_type == "purchase"):
-        query = 'SELECT * FROM flight WHERE departure_airport = %s AND arrival_airport = %s AND DATE(departure_time) = %s AND DATE(arrival_time) = %s AND status = "upcoming"'
-        cursor.execute(query,(origin,dest,dep_date,arr_date ))
+        query = "SELECT * FROM flight " \
+        "JOIN airport AS dep ON flight.departure_airport = dep.airport_name " \
+        "JOIN airport AS arr ON flight.arrival_airport = arr.airport_name " \
+        "WHERE status = 'upcoming' "
+
+        if (origin):
+            query += " AND departure_airport = %s "
+            param.append(origin)
+        if (d_city):
+            query += " AND dep.city = %s "
+            param.append(d_city)
+        if (dest):
+            query += " AND arrival_airport = %s "
+            param.append(dest)
+        if (a_city):
+            query += " AND arr.city = %s "
+            param.append(a_city)
+        if (dep_date):
+            query += " AND DATE(departure_time) = %s "
+            param.append(dep_date)
+        if (arr_date):
+            query += " AND DATE(arrival_time) = %s "
+            param.append(arr_date)
+
+        cursor.execute(query,param)
     elif (search_type == "inprogress"):
         query = 'SELECT * FROM flight WHERE airline_name = %s and flight_num = %s AND status = "in-progress"'
         cursor.execute(query,(airline_name, flight_num))
