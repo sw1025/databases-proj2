@@ -32,6 +32,9 @@
           <option value="purchase">Purchase</option>
         {% endif %}
       </select>
+      {% if session.get('username') and session.get('login_type') == 'customer'%}
+        <a href="{{url_for('cust_dashboard')}}"> Back to Dashboard </a>
+      {% endif %}
       <br>
       <br>
       <div id = "upcoming_search" class = toggleSearch>
@@ -72,9 +75,10 @@
           <input type="hidden" name="airline_name" value="{{ f['airline_name'] }}">
           <input type="hidden" name="flight_num" value="{{ f['flight_num'] }}">
           <input type="hidden" name="departure_time" value="{{ f['departure_time'] }}">
-          <button type="submit">Buy</button>
+          <button type="submit" name="seat_class" value="economy">Buy Economy</button> 
+          <button type="submit" name="seat_class" value="first">Buy First Class</button>
         </form>
-        <a href="{{url_for('cust_dashboard')}}"> Back to Dashboard </a>
+        <br>
         </span>
         <p> --- </p>
         <br>

@@ -191,13 +191,13 @@ def flightSearch():
             query += " AND departure_airport = %s "
             param.append(origin)
         if (d_city):
-            query += " AND dep.city = %s "
+            query += " AND dep.airport_city = %s "
             param.append(d_city)
         if (dest):
             query += " AND arrival_airport = %s "
             param.append(dest)
         if (a_city):
-            query += " AND arr.city = %s "
+            query += " AND arr.airport_city = %s "
             param.append(a_city)
         if (dep_date):
             query += " AND DATE(departure_time) = %s "
@@ -275,6 +275,7 @@ def purchased_flights():
 def purchase():
     if 'username' not in session:
         return redirect(url_for('login'))
+    print('reached here')
     
     # if session.get('login_type') != 'customer':
     #     return "Unauthorized", 403
@@ -282,9 +283,43 @@ def purchase():
     airline = request.form['airline_name']
     flight_num = request.form['flight_num']
     departure_time = request.form['departure_time']
+    seat_class = request.form.get('seat_class')
     user = session['username']
 
     cursor = conn.cursor()
+    
+    cursor.execute('SELECT base_price ' \
+    'FROM flight ' \
+    'WHERE airline_name = %s and flight_num = %s',(airline,flight_num))
+
+    purchase_price = cursor.fetchone()['base_price']
+
+    if (seat_class == "first"):
+        seat_class_id = 1
+        purchase_price +=300
+    elif (seat_class == "economy"):
+        seat_class_id = 0
+        
+    seat_capacity = cursor.execute('SELECT seat_capacity FROM seat_class ' \
+    'JOIN flight ON seat_class.airline_name = flight.airline_name ' \
+    'and seat_class.airplane_id = flight.airplane_id ' \
+    'WHERE seat_class.airline_name = %s and flight.flight_num = %s ' \
+    'AND seat_class_id = %s',(airline,flight_num,seat_class_id))
+    
+    seat_capacity_row = cursor.fetchone()
+    if not seat_capacity_row or seat_capacity_row['seat_capacity'] < 1:
+        return redirect(url_for('cust_dashboard'))
+
+    seat_capacity = seat_capacity_row['seat_capacity']
+
+    if (seat_capacity < 1):
+        return redirect(url_for('cust_dashboard'))
+    else:
+        cursor.execute('UPDATE seat_class ' \
+        'SET seat_capacity = seat_capacity-1 ' \
+        'WHERE airline_name = %s ' \
+        'AND airplane_id = (SELECT airplane_id FROM flight ' \
+        'WHERE airline_name=%s AND flight_num=%s) AND seat_class_id = %s ',(airline,airline,flight_num,seat_class_id))
 
     cursor.execute("SELECT MAX(ticket_id) AS max FROM ticket")
     t_id = (cursor.fetchone()['max'] or 0) + 1
@@ -293,9 +328,9 @@ def purchase():
 
     cursor.execute(insert_ticket, (t_id,airline, flight_num))
 
-    insert_purchase = 'INSERT INTO purchases (ticket_id, customer_email, purchase_date) VALUES (%s, %s,NOW())'
+    insert_purchase = 'INSERT INTO purchases (ticket_id, customer_email, purchase_date,purchase_price) VALUES (%s, %s,NOW(),%s)'
     
-    cursor.execute(insert_purchase, (t_id, user))
+    cursor.execute(insert_purchase, (t_id, user,purchase_price))
 
     conn.commit()
     cursor.close()
@@ -310,7 +345,7 @@ def spending():
     cursor = conn.cursor()
     user = session['username']
 
-    purchases = 'SELECT flight.base_price,ticket.ticket_id ' \
+    purchases = 'SELECT purchases.purchase_price,ticket.ticket_id ' \
     'FROM flight ' \
     'JOIN ticket on flight.flight_num = ticket.flight_num ' \
     'JOIN purchases on ticket.ticket_id = purchases.ticket_id ' \

@@ -12,3 +12,7 @@ INSERT into airplane VALUES('Delta',2,100);
 
 INSERT into flight VALUES('Delta',1234,'ATL',2026-11-09 15:45:21,'ICN',2026-11-10 11:45:00,800,'upcoming',1);
 INSERT into flight VALUES('Delta',1000,'PVG',2026-12-09 15:45:21,'JFK',2026-12-10 11:45:00,800,'upcoming',2);
+
+INSERT INTO seat_class VALUES ('Delta', 2, 0, 50),('Delta', 2, 1, 4);
+
+INSERT INTO seat_class VALUES ('Delta', 1, 0, 50),('Delta', 1, 1, 4);
