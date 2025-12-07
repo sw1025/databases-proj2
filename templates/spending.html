@@ -32,7 +32,16 @@
     {%endif%} #}
     <h1> Past Spending </h1>
 
-    {{spent}}
+    {% if spent%}
+        <ul>
+        {% for s in spent %}
+        <li>Ticket ID:{{ s['ticket_id'] }} </li>
+        <li>Price${{ s['base_price'] }} </li>
+        <br>
+        <br>
+        {%endfor%}
+        </ul>
+    {% endif%}
     <br>
     <br>
     <a href="{{url_for('cust_dashboard')}}"> Back to Dashboard </a>

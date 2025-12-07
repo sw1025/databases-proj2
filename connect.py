@@ -228,15 +228,20 @@ def cust_dashboard():
         return redirect(url_for('login'))
     return render_template('cust_dashboard.html')
 
-@app.route('/purchased_flights',methods=['GET'])
+@app.route('/purchased_flights',methods=['GET','POST'])
 def purchased_flights():
+    origin = request.form.get('origin')
+    dest = request.form.get('dest')
+    dep_date = request.form.get('dep_date')
+    arr_date = request.form.get('arr_date')
+
     if 'username' not in session:
         return redirect(url_for('login'))
 
     cursor = conn.cursor()
     user = session['username']
 
-    past_flights = 'SELECT ticket.ticket_id,ticket.airline_name,ticket.flight_num,flight.departure_airport,' \
+    query = 'SELECT ticket.ticket_id,ticket.airline_name,ticket.flight_num,flight.departure_airport,' \
     'flight.departure_time, flight.arrival_airport,flight.arrival_time, flight.status ' \
     'FROM flight ' \
     'JOIN ticket on flight.flight_num = ticket.flight_num ' \
@@ -244,7 +249,22 @@ def purchased_flights():
     'JOIN customer on purchases.customer_email = customer.email ' \
     'WHERE customer.email = %s '
 
-    cursor.execute(past_flights, (user,))
+    param = [user]
+
+    if (origin):
+        query += " AND departure_airport = %s "
+        param.append(origin)
+    if (dest):
+        query += " AND arrival_airport = %s "
+        param.append(dest)
+    if (dep_date):
+        query += " AND DATE(departure_time) = %s "
+        param.append(dep_date)
+    if (arr_date):
+        query += " AND DATE(arrival_time) = %s "
+        param.append(arr_date)
+
+    cursor.execute(query, (param))
 
     flights = cursor.fetchall()
     cursor.close()
@@ -290,7 +310,7 @@ def spending():
     cursor = conn.cursor()
     user = session['username']
 
-    purchases = 'SELECT flight.base_price ' \
+    purchases = 'SELECT flight.base_price,ticket.ticket_id ' \
     'FROM flight ' \
     'JOIN ticket on flight.flight_num = ticket.flight_num ' \
     'JOIN purchases on ticket.ticket_id = purchases.ticket_id ' \

@@ -32,7 +32,36 @@
     {%endif%} #}
     <h1> Purchased Flights </h1>
 
-    {{flights}}
+    <form action = "/purchased_flights" method = "POST">
+        <input type = "text" name = "origin" placeholder = "Origin Airport"> </input>
+        <br>
+        <br>
+        <input type = "text" name = "dest" placeholder = "Destination Airport"> </input>
+        <br>
+        <br>
+        <p> Departure Date </p>
+        <input type = "date" name = "dep_date"> </input>
+        <p> Arrival Date </p>
+        <input type = "date" name = "arr_date"> </input>
+        <br>
+        <button type = "submit"> Search </button>
+    </form>
+
+    {% if flights%}
+        <ul>
+        {% for f in flights %}
+        <li>Ticket ID:{{ f['ticket_id'] }} </li>
+        <li>Airline:{{ f['airline_name'] }} </li>
+        <li>Flight#:{{ f['flight_num'] }} </li>
+        <li>Departure Airport:{{ f['departure_airport'] }} </li>
+        <li>Departure Time:{{ f['departure_time'] }} </li>
+        <li>Arrival Airport:{{ f['arrival_airport'] }} </li>
+        <li>Arrival Time:{{ f['arrival_time'] }} </li>
+        <br>
+        <br>
+        {%endfor%}
+        </ul>
+    {% endif%}
     <br>
     <br>
     <a href="{{url_for('cust_dashboard')}}"> Back to Dashboard </a>
