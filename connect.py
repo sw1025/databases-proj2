@@ -13,7 +13,7 @@ app.secret_key = 'key that you cant guess'
 conn = pymysql.connect(host ='127.0.0.1',
                        user = 'root',
                        password = '',
-                       port=3306,
+                       port=3307,
                        db = 'air_reservation',
                        charset = 'utf8mb4',
                        cursorclass = pymysql.cursors.DictCursor)
@@ -141,7 +141,7 @@ def registerAuth():
         query = 'SELECT * FROM airline_staff WHERE username = %s'
 
     cursor.execute(query,(username,))
-
+    
     data = cursor.fetchone()
 
     if(data):
@@ -156,7 +156,7 @@ def registerAuth():
             ins = 'INSERT INTO booking_agent VALUES(%s,%s)'
             cursor.execute(ins,(username,password))
         elif (register_type == "staff"):
-            ins = 'INSERT INTO airline_staff VALUES(%s,%s)'
+            ins = 'INSERT INTO airline_staff VALUES(%s,%s,%s,%s,%s,%s,%s)'
             cursor.execute(ins,(username,password,f_name,l_name,date_of_birth,airline,role))
         
         conn.commit()
@@ -242,6 +242,10 @@ def spending():
 @app.route('/register',methods=['GET'])
 def register():
     return render_template('register.html')
+
+@app.route('/register_success',methods=['GET'])
+def register_success():
+    return render_template('register_success.html')
 
 @app.route('/login',methods=['GET'])
 def login():
