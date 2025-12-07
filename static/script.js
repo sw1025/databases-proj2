@@ -42,10 +42,21 @@ function registerForm(){
 
 function searchOption()
 {
-  event.preventDefault();
   console.log("1");
   const type = document.getElementById("search_select").value;
+  console.log(type);
   prices = document.getElementsByClassName("togglePrice");
+
+  if (type === "upcoming"){
+    console.log("seartch 1")
+    document.getElementById("upcoming_search").style.display = "block";
+    document.getElementById("inprogress_search").style.display = "none";
+  }
+  else if (type === "inprogress"){
+    console.log("seartch 2")
+    document.getElementById("inprogress_search").style.display = "block";
+    document.getElementById("upcoming_search").style.display = "none";
+  }
 
   for (let i = 0; i < prices.length; i++) 
   {

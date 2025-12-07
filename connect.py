@@ -128,18 +128,21 @@ def flightSearch():
     search_type = request.form['search_type']
     origin = request.form['origin']
     dest = request.form['dest']
-    # city = request.form['city']
+    city = request.form['city']
     dep_date = request.form['dep_date']
     arr_date = request.form['arr_date']
-
+    airline_name = request.form['airline_name']
+    flight_num = request.form['flight_num']
+    
     cursor = conn.cursor()
 
     if (search_type == "upcoming" or search_type == "purchase"):
         query = 'SELECT * FROM flight WHERE departure_airport = %s AND arrival_airport = %s AND DATE(departure_time) = %s AND DATE(arrival_time) = %s AND status = "upcoming"'
+        cursor.execute(query,(origin,dest,dep_date,arr_date ))
     elif (search_type == "inprogress"):
-        query = 'SELECT * FROM flight WHERE departure_airport = %s AND arrival_airport = %s AND DATE(departure_time) = %s AND DATE(arrival_time) = %s AND status = "in-progress"'
+        query = 'SELECT * FROM flight WHERE airline_name = %s and flight_num = %s AND status = "in-progress"'
+        cursor.execute(query,(airline_name, flight_num))
 
-    cursor.execute(query,(origin,dest,dep_date,arr_date ))
     flights = cursor.fetchall()
     cursor.close()
     error = None
