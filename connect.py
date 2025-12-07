@@ -13,65 +13,87 @@ app.secret_key = 'key that you cant guess'
 conn = pymysql.connect(host ='127.0.0.1',
                        user = 'root',
                        password = '',
-                       port=3307,
+                       port=3306,
                        db = 'air_reservation',
                        charset = 'utf8mb4',
                        cursorclass = pymysql.cursors.DictCursor)
 
-@app.route('/loginAuth',methods=['POST'])
-
+@app.route('/loginAuth', methods=['POST'])
 def loginAuth():
     login_type = request.form['login_type']
-    email = request.form['username']
+    username = request.form['username']   # customers + agents use email; staff uses username
     password = request.form['password']
 
     pwd_bytes = password.encode('utf-8')
-	
-    print(request.form)
 
-    #Send query to database by calling execute method of cursor
     cursor = conn.cursor()
 
-    if (login_type == "customer"):
-        query = 'SELECT * FROM customer WHERE email = %s'
-    elif (login_type == "agent"):
-        query = 'SELECT * FROM booking_agent WHERE email = %s'
-    elif (login_type == "staff"):
-        query = 'SELECT * FROM airline_staff WHERE username = %s'
+    # Corrected SELECT queries
+    if login_type == "customer":
+        query = "SELECT email AS username, password FROM customer WHERE email=%s"
+    elif login_type == "agent":
+        query = "SELECT email AS username, password FROM booking_agent WHERE email=%s"
+    elif login_type == "staff":
+        query = "SELECT username, password FROM airline_staff WHERE username=%s"
+    else:
+        return render_template("login.html", error="Invalid login type")
 
-    cursor.execute(query,(email,))
-
+    cursor.execute(query, (username,))
     data = cursor.fetchone()
     cursor.close()
-    error = None
-    if(data):
-        result = bcrypt.checkpw(pwd_bytes, data['password'].encode('utf-8'))
-        if (result):
-            session['username'] = email
-            if (login_type == "customer"):
-                return redirect(url_for('cust_dashboard'))
-            elif (login_type == "agent"):
-                return redirect(url_for('agent_dashboard'))
-            elif (login_type == "staff"):
-                return redirect(url_for('staff_dashboard'))
-        else:
-            error = 'Wrong password'
-            return render_template('login.html',error=error)
+
+    if not data:
+        return render_template("login.html", error="Invalid username")
+
+    stored_hash = data["password"]
+
+    # stored_hash MUST be decoded string
+    if isinstance(stored_hash, bytes):
+        stored_hash = stored_hash.decode('utf-8')
+
+    # Compare bcrypt hashes
+    if bcrypt.checkpw(pwd_bytes, stored_hash.encode('utf-8')):
+        session['username'] = data["username"]
+
+        if login_type == "customer":
+            return redirect(url_for('cust_dashboard'))
+        elif login_type == "agent":
+            return redirect(url_for('agent_dashboard'))
+        elif login_type == "staff":
+            return redirect(url_for('staff_dashboard'))
     else:
-        error = 'Invalid username'
-        return render_template('login.html',error=error)
-    
-@app.route('/registerAuth',methods=['POST'])
+        return render_template("login.html", error="Wrong password")
+  
+@app.route('/registerAuth', methods=['POST'])
 def registerAuth():
     register_type = request.form['register_type']
     username = request.form['username']
     password = request.form['password']
-    bytes = password.encode('utf-8')
-    salt = bcrypt.gensalt()
-    hash = bcrypt.hashpw(bytes,salt)
-    password = hash
 
-    if (register_type == "customer"):
+    # Hash password correctly
+    pwd_bytes = password.encode('utf-8')
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(pwd_bytes, salt).decode('utf-8')  # store as TEXT string
+
+    cursor = conn.cursor()
+
+    # Check if user exists
+    if register_type == "customer":
+        check_query = "SELECT * FROM customer WHERE email=%s"
+    elif register_type == "agent":
+        check_query = "SELECT * FROM booking_agent WHERE email=%s"
+    elif register_type == "staff":
+        check_query = "SELECT * FROM airline_staff WHERE username=%s"
+    else:
+        return render_template("register.html", error="Invalid registration type")
+
+    cursor.execute(check_query, (username,))
+    if cursor.fetchone():
+        cursor.close()
+        return render_template("register.html", error="User already exists")
+
+    # Insert based on user type
+    if register_type == "customer":
         name = request.form['name']
         building_number = request.form['buildingnum']
         street = request.form['street']
@@ -82,7 +104,26 @@ def registerAuth():
         passport_expiration = request.form['passportexp']
         passport_country = request.form['country']
         date_of_birth = request.form['dob']
-    elif (register_type == "staff"):
+
+        ins = """
+            INSERT INTO customer
+            (email, name, password, building_number, street, city, state,
+             phone_number, passport_number, passport_expiration, passport_country, date_of_birth)
+            VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+        """
+
+        cursor.execute(ins, (username, name, hashed, building_number, street, city, state,
+                             phone_number, passport_number, passport_expiration, passport_country,
+                             date_of_birth))
+
+    elif register_type == "agent":
+        ins = """
+            INSERT INTO booking_agent (email, password)
+            VALUES (%s, %s)
+        """
+        cursor.execute(ins, (username, hashed))
+
+    elif register_type == "staff":
         f_name = request.form['first_name']
         l_name = request.form['last_name']
         date_of_birth = request.form['dob']
@@ -100,7 +141,7 @@ def registerAuth():
         query = 'SELECT * FROM airline_staff WHERE username = %s'
 
     cursor.execute(query,(username,))
-    
+
     data = cursor.fetchone()
 
     if(data):

@@ -1,62 +1,49 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width">
+<head>
     <title>Login</title>
-    
-    <link rel="icon" href="https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/How_to_use_icon.svg/1200px-How_to_use_icon.svg.png">
-    
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400&display=swap" rel="stylesheet">
-    
-  </head>
-  
-  <body id = "page">
-    <header> NYUSH Airlines <br>
-      <div id="google_translate_element"></div>
-      <script type="text/javascript">// <![CDATA[
-      function googleTranslateElementInit() {
-      new google.translate.TranslateElement({pageLanguage: 'en', layout: google.translate.TranslateElement.InlineLayout.SIMPLE}, 'google_translate_element');
-      }
-      // ]]></script>
-      <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit" type="text/javascript"></script>
-    </header>
-    <nav>
-      <ul>
-        <li class = "navTitle"> <a href="{{ url_for('home') }}">  Home </a>
-        </li>
-        <li class = "navTitle"> <a href="{{ url_for('flight_search') }}">  Flight Search </a>
-        </li>
-      </ul>
-    </nav>
-    
-    <h1> Login </h1>
-    <main>
-    <form action="/loginAuth" method = "POST">
-      <select name = "login_type">
-        <option value="" disabled selected>Account Type</option>
-        <option value = 'customer'>Customer</option>
-        <option value = 'agent'>Booking Agent</option>
-        <option value = 'staff'>Airline Staff</option>
-      </select>
+</head>
+<body>
 
-      <input type = "text" name = "username" placeholder = "Email/Username" required> </input>
-      <br>
-      <br>
-      <input type = "password" name = "password" placeholder = "Password" required> </input>
-      <br>
-      <br>
-      <button type = "submit"> Login </button>
-      {% if error %}
-        <p class = "error"> <strong>Error: </strong>{{error}}</p>
-      {% endif %}
-    </form>
-    <p> Need to create an account? <a href="{{ url_for('register') }}"> Register. </a> </p> 
+<h2>Login</h2>
 
-    </main>
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
-  </body>
+<form action="/loginAuth" method="POST">
+
+    <label>Login as:</label><br>
+    <select name="login_type" required>
+        <option value="customer">Customer</option>
+        <option value="agent">Booking Agent</option>
+        <option value="staff">Airline Staff</option>
+    </select>
+    <br><br>
+
+    <label>Email / Username:</label><br>
+    <input type="text" name="username" required>
+    <br><br>
+
+    <label>Password:</label><br>
+    <input type="password" name="password" required>
+    <br><br>
+
+    <button type="submit">Login</button>
+</form>
+
+<hr style="margin-top:20px; width:300px;">
+
+<p style="margin-top:10px;">
+    Don't have an account?  
+    <a href="/register">Register here</a>.
+</p>
+
+{% if error %}
+<p style="color:red;">{{ error }}</p>
+{% endif %}
+
+<script>
+if (window.location.pathname.endsWith("login.html")) {
+    window.location.href = "/login";
+}
+</script>
+
+</body>
 </html>
