@@ -34,6 +34,10 @@ nav{
   display:none;
 }
 
+.toggleSearch{
+  display:none;
+}
+
 .togglePrice{
   display:none;
 }

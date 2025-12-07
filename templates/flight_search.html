@@ -34,19 +34,29 @@
       </select>
       <br>
       <br>
-      <input type = "text" name = "origin" placeholder = "Origin Airport"> </input>
-      <br>
-      <br>
-      <input type = "text" name = "dest" placeholder = "Destination Airport"> </input>
-      <br>
-      <br>
-      <input type = "text" name = "city" placeholder = "City"> </input>
-      <br>
-      <br>
-      <p> Departure Date </p>
-      <input type = "date" name = "dep_date"> </input>
-      <p> Arrival Date </p>
-      <input type = "date" name = "arr_date"> </input>
+      <div id = "upcoming_search" class = toggleSearch>
+        <input type = "text" name = "origin" placeholder = "Origin Airport"> </input>
+        <br>
+        <br>
+        <input type = "text" name = "dest" placeholder = "Destination Airport"> </input>
+        <br>
+        <br>
+        <input type = "text" name = "city" placeholder = "City"> </input>
+        <br>
+        <br>
+        <p> Departure Date </p>
+        <input type = "date" name = "dep_date"> </input>
+        <p> Arrival Date </p>
+        <input type = "date" name = "arr_date"> </input>
+      </div>
+
+      <div  id = "inprogress_search" class = toggleSearch>
+        <input type = "text" name = "airline_name" placeholder = "Airline"> </input>
+        <br>
+        <br>
+        <input type = "text" name = "flight_num" placeholder = "Flight Number"> </input>
+      </div>
+
       <br>
       <br>
       <button type = "submit"> Search </button>
