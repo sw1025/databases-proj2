@@ -1,0 +1,15 @@
+<h1>Search Authorized Flights</h1>
+
+<p>Authorized airlines: {{ authorized }}</p>
+
+<form method="POST">
+  Origin: <input name="origin"><br>
+  Destination: <input name="dest"><br>
+  <button type="submit">Search</button>
+</form>
+
+<ul>
+  {% for f in flights %}
+    <li>{{ f.airline_name }} Flight {{ f.flight_num }}</li>
+  {% endfor %}
+</ul>

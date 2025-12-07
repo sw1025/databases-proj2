@@ -1,0 +1,18 @@
+<h1>Purchase Ticket With Seat Class</h1>
+
+<form method="POST">
+  Airline: <input name="airline"><br>
+  Flight #: <input name="flight_num"><br>
+  Customer Email: <input name="customer_email"><br>
+
+  Seat Class:
+  <select name="seat_class_id">
+    {% for c in classes %}
+      <option value="{{ c }}">Seat Class {{ c }}</option>
+    {% endfor %}
+  </select>
+
+  <br><br>
+  <button type="submit">Purchase</button>
+</form>
+
