@@ -89,6 +89,14 @@
 <p style="color:red;">{{ error }}</p>
 {% endif %}
 
+<p style="margin-top:10px;">
+    Already have an account?
+    <a href="{{ url_for('login') }}"> Login here</a>.
+</p>
+<p style="margin-top:10px;">
+    <a href="{{ url_for('home') }}">Back to Homepage</a>.
+</p>
+
 <script>
 function showFields() {
     const type = document.getElementById("register_type").value;
